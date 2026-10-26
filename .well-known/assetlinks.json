@@ -1,0 +1,14 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.luneslogic.puzlario",
+      "sha256_cert_fingerprints": [
+        "1E:E3:40:78:A7:60:18:DD:C6:2C:BF:99:97:82:AF:A1:4D:AD:80:A7:85:56:5A:FB:AF:21:11:83:06:23:07:BA",
+        "6F:98:5F:52:96:EA:24:52:0A:A9:00:1E:96:92:6D:1A:75:34:7B:A9:B1:53:46:33:FA:D8:41:AA:18:77:2E:CF",
+        "09:A5:B4:9C:96:47:3F:C3:B9:C4:DD:EA:1C:0E:CC:AB:47:BF:05:20:C4:2A:71:80:7D:43:20:0E:D3:AA:5C:BD"
+      ]
+    }
+  }
+]
