@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Duelo en Puzlario</title>
+<meta name="description" content="Un duelo de Puzlario: el mismo puzle de lógica para los dos; gana el tiempo más bajo.">
+<style>
+  :root {
+    --ink: #1d2740; --muted: #6f6758; --paper: #faf5ec; --surface: #fffcf6;
+    --line: #e9dfcd; --gold: #b07f14; --navy: #1d2740; --on-navy: #fffcf6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #efe6d4; --muted: #a39a8a; --paper: #10131f; --surface: #1e2437;
+      --line: #363f5c; --gold: #e2b54d; --navy: #e2b54d; --on-navy: #10131f; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 32px 16px 48px; }
+  section { background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+    padding: 24px 22px 22px; text-align: center; }
+  .swords { width: 64px; height: 64px; color: var(--gold); }
+  .kicker { margin: 10px 0 0; color: var(--gold); font-weight: 800; letter-spacing: .08em; font-size: .8rem; text-transform: uppercase; }
+  h1 { font-size: 1.7rem; line-height: 1.2; margin: 6px 0 10px; }
+  p { margin: 8px 0; }
+  .muted { color: var(--muted); font-size: .95rem; }
+  .button { display: block; margin: 18px 0 0; padding: 16px 18px; border-radius: 16px; font-weight: 800;
+    text-decoration: none; font-size: 1.05rem; }
+  .primary { background: var(--navy); color: var(--on-navy); }
+  .secondary { border: 2px solid var(--line); color: var(--ink); }
+  footer { margin-top: 18px; text-align: center; font-size: .85rem; color: var(--muted); }
+  footer a { color: var(--gold); font-weight: 600; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+<section>
+  <svg class="swords" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M13 15.5L4 6.5V4h2.5l9 9"/><path d="M11 17l6-6M15.5 15.5l3 3"/><path d="M11 15.5l9-9V4h-2.5l-9 9"/><path d="M13 17l-6-6M8.5 15.5l-3 3"/><circle cx="19.5" cy="19.5" r="1.2"/><circle cx="4.5" cy="19.5" r="1.2"/>
+  </svg>
+  <p class="kicker" id="kicker">Puzlario</p>
+  <h1 id="title"></h1>
+  <p id="body"></p>
+  <p class="muted" id="rule"></p>
+  <a class="button primary" id="open" hidden></a>
+  <a class="button secondary" id="store" href="https://play.google.com/store/apps/details?id=com.luneslogic.puzlario"></a>
+  <p class="muted" id="note"></p>
+</section>
+<footer><span id="tagline"></span> · <a id="privacy" href="../privacidad/">Privacidad</a></footer>
+</main>
+<script>
+// Página de los enlaces de duelo de Puzlario (v1.0, mejora 6). El enlace lleva el juego, el puzle y el
+// resultado de quien reta; esta página solo lo enseña y, en Android, abre el juego con el mismo enlace.
+// No guarda ni envía nada. Los nombres de los juegos los escribe tools/duel_page.gd desde las traducciones.
+"use strict";
+/* juegos: */
+const GAMES = {"de":{"bridges":"Brücken","crowns":"Damen","futoshiki":"Futoshiki","hitori":"Hitori","kakuro":"Kakuro","killer":"Killer-Sudoku","light":"Beleuchtung","mines":"Logik-Minen","nonogram":"Nonogramme","path":"Pfad","slitherlink":"Slitherlink","stars":"Sterne","sudoku":"Sudoku","suns":"Sonne & Mond"},"en":{"bridges":"Bridges","crowns":"Queens","futoshiki":"Futoshiki","hitori":"Hitori","kakuro":"Kakuro","killer":"Killer Sudoku","light":"Light Up","mines":"Logic Mines","nonogram":"Nonograms","path":"Path","slitherlink":"Slitherlink","stars":"Stars","sudoku":"Sudoku","suns":"Sun & Moon"},"es":{"bridges":"Puentes","crowns":"Reinas","futoshiki":"Futoshiki","hitori":"Hitori","kakuro":"Kakuro","killer":"Sudoku asesino","light":"Iluminación","mines":"Minas lógicas","nonogram":"Nonogramas","path":"Camino","slitherlink":"Slitherlink","stars":"Estrellas","sudoku":"Sudoku","suns":"Sol y Luna"},"fr":{"bridges":"Ponts","crowns":"Reines","futoshiki":"Futoshiki","hitori":"Hitori","kakuro":"Kakuro","killer":"Sudoku Killer","light":"Illumination","mines":"Mines logiques","nonogram":"Nonogrammes","path":"Chemin","slitherlink":"Slitherlink","stars":"Étoiles","sudoku":"Sudoku","suns":"Soleil et Lune"},"it":{"bridges":"Ponti","crowns":"Regine","futoshiki":"Futoshiki","hitori":"Hitori","kakuro":"Kakuro","killer":"Killer Sudoku","light":"Illuminazione","mines":"Mine logiche","nonogram":"Nonogrammi","path":"Percorso","slitherlink":"Slitherlink","stars":"Stelle","sudoku":"Sudoku","suns":"Sole e Luna"},"pt_BR":{"bridges":"Pontes","crowns":"Rainhas","futoshiki":"Futoshiki","hitori":"Hitori","kakuro":"Kakuro","killer":"Sudoku Killer","light":"Iluminação","mines":"Minas lógicas","nonogram":"Nonogramas","path":"Caminho","slitherlink":"Slitherlink","stars":"Estrelas","sudoku":"Sudoku","suns":"Sol e Lua"}};
+const HINT_SECONDS = 30;
+/* fin juegos */
+const PACKAGE = "com.luneslogic.puzlario";
+const STORE = "https://play.google.com/store/apps/details?id=" + PACKAGE;
+const TEXTS = {
+  es: { title: "Duelo en Puzlario", challenged: "¡Te han retado a un duelo!", reply: "Respuesta a tu duelo",
+    body: "Tu rival ha resuelto este puzle de {game} en {theirs}. ¿Puedes mejorarlo?",
+    replyBody: "Duelo de {game}: tú, {mine}; tu rival, {theirs}.",
+    none: "{time} sin pistas", one: "{time} con 1 pista", many: "{time} con {n} pistas",
+    rule: "El mismo puzle para los dos. Gana el tiempo más bajo; cada pista suma {s} segundos.",
+    open: "Abrir en Puzlario", store: "Consíguelo en Google Play",
+    note: "¿Aún no tienes Puzlario? Instálalo y vuelve a tocar el enlace del duelo.",
+    notAndroid: "Puzlario es un juego para Android: abre este enlace en tu móvil.",
+    invalid: "Este enlace de duelo no está completo.", broken: "Duelo de Puzlario",
+    tagline: "Juegos de lógica diarios, sin vidas y sin reloj", privacy: "Privacidad" },
+  en: { title: "Puzlario duel", challenged: "You've been challenged to a duel!", reply: "Reply to your duel",
+    body: "Your rival solved this {game} puzzle in {theirs}. Can you do better?",
+    replyBody: "{game} duel: you, {mine}; your rival, {theirs}.",
+    none: "{time} with no hints", one: "{time} with 1 hint", many: "{time} with {n} hints",
+    rule: "The same puzzle for both of you. Lowest time wins; each hint adds {s} seconds.",
+    open: "Open in Puzlario", store: "Get it on Google Play",
+    note: "Don't have Puzlario yet? Install it and tap the duel link again.",
+    notAndroid: "Puzlario is a game for Android: open this link on your phone.",
+    invalid: "This duel link is incomplete.", broken: "Puzlario duel",
+    tagline: "Daily logic puzzles, with no lives and no timer", privacy: "Privacy" },
+  pt_BR: { title: "Duelo no Puzlario", challenged: "Desafiaram você para um duelo!", reply: "Resposta ao seu duelo",
+    body: "Seu rival resolveu este quebra-cabeça de {game} em {theirs}. Consegue fazer melhor?",
+    replyBody: "Duelo de {game}: você, {mine}; seu rival, {theirs}.",
+    none: "{time} sem dicas", one: "{time} com 1 dica", many: "{time} com {n} dicas",
+    rule: "O mesmo quebra-cabeça para os dois. Vence o menor tempo; cada dica soma {s} segundos.",
+    open: "Abrir no Puzlario", store: "Disponível no Google Play",
+    note: "Ainda não tem o Puzlario? Instale e toque de novo no link do duelo.",
+    notAndroid: "O Puzlario é um jogo para Android: abra este link no seu celular.",
+    invalid: "Este link de duelo está incompleto.", broken: "Duelo do Puzlario",
+    tagline: "Jogos de lógica diários, sem vidas e sem relógio", privacy: "Privacidade" },
+  fr: { title: "Duel sur Puzlario", challenged: "On te défie en duel !", reply: "Réponse à ton duel",
+    body: "Ton adversaire a résolu ce puzzle de {game} en {theirs}. Tu peux faire mieux ?",
+    replyBody: "Duel de {game} : toi, {mine} ; ton adversaire, {theirs}.",
+    none: "{time} sans indice", one: "{time} avec 1 indice", many: "{time} avec {n} indices",
+    rule: "Le même puzzle pour vous deux. Le temps le plus bas gagne ; chaque indice ajoute {s} secondes.",
+    open: "Ouvrir dans Puzlario", store: "Disponible sur Google Play",
+    note: "Tu n’as pas encore Puzlario ? Installe-le et touche à nouveau le lien du duel.",
+    notAndroid: "Puzlario est un jeu pour Android : ouvre ce lien sur ton téléphone.",
+    invalid: "Ce lien de duel est incomplet.", broken: "Duel Puzlario",
+    tagline: "Jeux de logique quotidiens, sans vies et sans chrono", privacy: "Confidentialité" },
+  it: { title: "Duello su Puzlario", challenged: "Hai ricevuto una sfida a duello!", reply: "Risposta al tuo duello",
+    body: "Il tuo rivale ha risolto questo puzzle di {game} in {theirs}. Riesci a fare meglio?",
+    replyBody: "Duello di {game}: tu, {mine}; il tuo rivale, {theirs}.",
+    none: "{time} senza suggerimenti", one: "{time} con 1 suggerimento", many: "{time} con {n} suggerimenti",
+    rule: "Lo stesso puzzle per entrambi. Vince il tempo più basso; ogni suggerimento aggiunge {s} secondi.",
+    open: "Apri in Puzlario", store: "Disponibile su Google Play",
+    note: "Non hai ancora Puzlario? Installalo e tocca di nuovo il link del duello.",
+    notAndroid: "Puzlario è un gioco per Android: apri questo link sul tuo telefono.",
+    invalid: "Questo link del duello è incompleto.", broken: "Duello di Puzlario",
+    tagline: "Giochi di logica ogni giorno, senza vite e senza cronometro", privacy: "Privacy" },
+  de: { title: "Duell in Puzlario", challenged: "Du wurdest zum Duell herausgefordert!", reply: "Antwort auf dein Duell",
+    body: "Dein Gegenüber hat dieses {game}-Rätsel in {theirs} gelöst. Schaffst du es besser?",
+    replyBody: "{game}-Duell: du {mine}, dein Gegenüber {theirs}.",
+    none: "{time} ohne Tipps", one: "{time} mit 1 Tipp", many: "{time} mit {n} Tipps",
+    rule: "Dasselbe Rätsel für euch beide. Die niedrigste Zeit gewinnt; jeder Tipp zählt {s} Sekunden extra.",
+    open: "In Puzlario öffnen", store: "Jetzt bei Google Play",
+    note: "Du hast Puzlario noch nicht? Installiere es und tippe noch einmal auf den Duell-Link.",
+    notAndroid: "Puzlario ist ein Spiel für Android: Öffne diesen Link auf deinem Handy.",
+    invalid: "Dieser Duell-Link ist unvollständig.", broken: "Puzlario-Duell",
+    tagline: "Tägliche Logikrätsel, ohne Leben und ohne Uhr", privacy: "Datenschutz" },
+};
+
+function language() {
+  for (const tag of navigator.languages || [navigator.language || ""]) {
+    const code = String(tag).toLowerCase();
+    if (code.startsWith("pt")) return "pt_BR";
+    for (const lang of ["es", "en", "fr", "it", "de"]) if (code.startsWith(lang)) return lang;
+  }
+  return "en";
+}
+
+function fill(template, values) {
+  return template.replace(/\{(\w+)\}/g, (all, key) => (key in values ? String(values[key]) : all));
+}
+
+function clock(seconds) {
+  const h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60), s = seconds % 60;
+  const two = (n) => String(n).padStart(2, "0");
+  return h > 0 ? h + ":" + two(m) + ":" + two(s) : m + ":" + two(s);
+}
+
+// Solo números enteros sin signo y cortos (lo demás del enlace no se enseña).
+function number(value, max) {
+  if (typeof value !== "string" || !/^\d{1,7}$/.test(value)) return null;
+  const n = parseInt(value, 10);
+  return n <= max ? n : null;
+}
+
+const lang = language();
+const t = TEXTS[lang];
+document.documentElement.lang = lang.replace("_", "-");
+const params = new URLSearchParams(location.search);
+const game = params.get("j");
+const seconds = number(params.get("t"), 359999);
+const hints = number(params.get("p"), 999);
+const replySeconds = params.has("rt") ? number(params.get("rt"), 359999) : undefined;
+const replyHints = params.has("rp") ? number(params.get("rp"), 999) : undefined;
+const valid = params.get("v") === "1" && Object.prototype.hasOwnProperty.call(GAMES.es, game || "")
+  && ["d", "easy", "medium", "hard"].includes(params.get("o")) && number(params.get("n"), 999999) !== null
+  && seconds !== null && hints !== null && /^[0-9a-fA-F]{6}$/.test(params.get("f") || "")
+  && replySeconds !== null && replyHints !== null && (replySeconds === undefined) === (replyHints === undefined);
+
+function result(time, count) {
+  const values = { time: clock(time), n: count };
+  return fill(count === 0 ? t.none : (count === 1 ? t.one : t.many), values);
+}
+
+document.title = t.title;
+document.getElementById("tagline").textContent = t.tagline;
+document.getElementById("privacy").textContent = t.privacy;
+if (lang !== "es") document.getElementById("privacy").href = "../privacidad/#en";
+const store = document.getElementById("store");
+store.textContent = t.store;
+const isAndroid = /android/i.test(navigator.userAgent);
+if (!valid) {
+  document.getElementById("title").textContent = t.broken;
+  document.getElementById("body").textContent = t.invalid;
+} else {
+  const name = GAMES[lang][game] || GAMES.en[game];
+  document.getElementById("kicker").textContent = "Puzlario · " + name;
+  if (replySeconds === undefined) {
+    document.getElementById("title").textContent = t.challenged;
+    document.getElementById("body").textContent = fill(t.body, { game: name, theirs: result(seconds, hints) });
+  } else {
+    document.getElementById("title").textContent = t.reply;
+    document.getElementById("body").textContent = fill(t.replyBody,
+      { game: name, mine: result(replySeconds, replyHints), theirs: result(seconds, hints) });
+  }
+  document.getElementById("rule").textContent = fill(t.rule, { s: HINT_SECONDS });
+  if (isAndroid) {
+    // El mismo enlace, abierto con el juego (Chrome: intent:// con el paquete; si no está, a Google Play).
+    const safe = new URLSearchParams();
+    for (const key of ["v", "j", "o", "n", "t", "p", "f", "rt", "rp"]) if (params.has(key)) safe.set(key, params.get(key));
+    const open = document.getElementById("open");
+    open.href = "intent://kailscillo.github.io/duelo/?" + safe.toString() + "#Intent;scheme=https;package=" + PACKAGE
+      + ";S.browser_fallback_url=" + encodeURIComponent(STORE) + ";end";
+    open.textContent = t.open;
+    open.hidden = false;
+    document.getElementById("note").textContent = t.note;
+  } else {
+    document.getElementById("note").textContent = t.notAndroid;
+  }
+}
+</script>
+</body>
+</html>
