@@ -46,6 +46,7 @@
   <p id="body"></p>
   <p class="muted" id="rule"></p>
   <a class="button primary" id="open" hidden></a>
+  <a class="button primary" id="play" hidden></a>
   <a class="button secondary" id="store" href="https://play.google.com/store/apps/details?id=com.luneslogic.puzlario"></a>
   <p class="muted" id="note"></p>
 </section>
@@ -54,6 +55,8 @@
 <script>
 // Página de los enlaces de duelo de Puzlario (v1.0, mejora 6). El enlace lleva el juego, el puzle y el
 // resultado de quien reta; esta página solo lo enseña y, en Android, abre el juego con el mismo enlace.
+// v1.1: «Jugar en el navegador» lleva a jugar/ (la versión web del juego, solo para duelos) con el mismo
+// enlace; fuera de Android es el botón principal.
 // No guarda ni envía nada. Los nombres de los juegos los escribe tools/duel_page.gd desde las traducciones.
 "use strict";
 /* juegos: */
@@ -68,9 +71,9 @@ const TEXTS = {
     replyBody: "Duelo de {game}: tú, {mine}; tu rival, {theirs}.",
     none: "{time} sin pistas", one: "{time} con 1 pista", many: "{time} con {n} pistas",
     rule: "El mismo puzle para los dos. Gana el tiempo más bajo; cada pista suma {s} segundos.",
-    open: "Abrir en Puzlario", store: "Consíguelo en Google Play",
+    play: "Jugar en el navegador", open: "Abrir en Puzlario", store: "Consíguelo en Google Play",
     note: "¿Aún no tienes Puzlario? Instálalo y vuelve a tocar el enlace del duelo.",
-    notAndroid: "Puzlario es un juego para Android: abre este enlace en tu móvil.",
+    notAndroid: "Puzlario es un juego para Android, pero este duelo puedes jugarlo aquí mismo, en el navegador.", androidOnly: "Puzlario es un juego para Android: abre este enlace en tu móvil.",
     invalid: "Este enlace de duelo no está completo.", broken: "Duelo de Puzlario",
     tagline: "Juegos de lógica diarios, sin vidas y sin reloj", privacy: "Privacidad" },
   en: { title: "Puzlario duel", challenged: "You've been challenged to a duel!", reply: "Reply to your duel",
@@ -78,9 +81,9 @@ const TEXTS = {
     replyBody: "{game} duel: you, {mine}; your rival, {theirs}.",
     none: "{time} with no hints", one: "{time} with 1 hint", many: "{time} with {n} hints",
     rule: "The same puzzle for both of you. Lowest time wins; each hint adds {s} seconds.",
-    open: "Open in Puzlario", store: "Get it on Google Play",
+    play: "Play in your browser", open: "Open in Puzlario", store: "Get it on Google Play",
     note: "Don't have Puzlario yet? Install it and tap the duel link again.",
-    notAndroid: "Puzlario is a game for Android: open this link on your phone.",
+    notAndroid: "Puzlario is an Android game, but you can play this duel right here in your browser.", androidOnly: "Puzlario is a game for Android: open this link on your phone.",
     invalid: "This duel link is incomplete.", broken: "Puzlario duel",
     tagline: "Daily logic puzzles, with no lives and no timer", privacy: "Privacy" },
   pt_BR: { title: "Duelo no Puzlario", challenged: "Desafiaram você para um duelo!", reply: "Resposta ao seu duelo",
@@ -88,9 +91,9 @@ const TEXTS = {
     replyBody: "Duelo de {game}: você, {mine}; seu rival, {theirs}.",
     none: "{time} sem dicas", one: "{time} com 1 dica", many: "{time} com {n} dicas",
     rule: "O mesmo quebra-cabeça para os dois. Vence o menor tempo; cada dica soma {s} segundos.",
-    open: "Abrir no Puzlario", store: "Disponível no Google Play",
+    play: "Jogar no navegador", open: "Abrir no Puzlario", store: "Disponível no Google Play",
     note: "Ainda não tem o Puzlario? Instale e toque de novo no link do duelo.",
-    notAndroid: "O Puzlario é um jogo para Android: abra este link no seu celular.",
+    notAndroid: "O Puzlario é um jogo para Android, mas você pode jogar este duelo aqui mesmo, no navegador.", androidOnly: "O Puzlario é um jogo para Android: abra este link no seu celular.",
     invalid: "Este link de duelo está incompleto.", broken: "Duelo do Puzlario",
     tagline: "Jogos de lógica diários, sem vidas e sem relógio", privacy: "Privacidade" },
   fr: { title: "Duel sur Puzlario", challenged: "On te défie en duel !", reply: "Réponse à ton duel",
@@ -98,9 +101,9 @@ const TEXTS = {
     replyBody: "Duel de {game} : toi, {mine} ; ton adversaire, {theirs}.",
     none: "{time} sans indice", one: "{time} avec 1 indice", many: "{time} avec {n} indices",
     rule: "Le même puzzle pour vous deux. Le temps le plus bas gagne ; chaque indice ajoute {s} secondes.",
-    open: "Ouvrir dans Puzlario", store: "Disponible sur Google Play",
+    play: "Jouer dans le navigateur", open: "Ouvrir dans Puzlario", store: "Disponible sur Google Play",
     note: "Tu n’as pas encore Puzlario ? Installe-le et touche à nouveau le lien du duel.",
-    notAndroid: "Puzlario est un jeu pour Android : ouvre ce lien sur ton téléphone.",
+    notAndroid: "Puzlario est un jeu pour Android, mais tu peux jouer ce duel ici même, dans ton navigateur.", androidOnly: "Puzlario est un jeu pour Android : ouvre ce lien sur ton téléphone.",
     invalid: "Ce lien de duel est incomplet.", broken: "Duel Puzlario",
     tagline: "Jeux de logique quotidiens, sans vies et sans chrono", privacy: "Confidentialité" },
   it: { title: "Duello su Puzlario", challenged: "Hai ricevuto una sfida a duello!", reply: "Risposta al tuo duello",
@@ -108,9 +111,9 @@ const TEXTS = {
     replyBody: "Duello di {game}: tu, {mine}; il tuo rivale, {theirs}.",
     none: "{time} senza suggerimenti", one: "{time} con 1 suggerimento", many: "{time} con {n} suggerimenti",
     rule: "Lo stesso puzzle per entrambi. Vince il tempo più basso; ogni suggerimento aggiunge {s} secondi.",
-    open: "Apri in Puzlario", store: "Disponibile su Google Play",
+    play: "Gioca nel browser", open: "Apri in Puzlario", store: "Disponibile su Google Play",
     note: "Non hai ancora Puzlario? Installalo e tocca di nuovo il link del duello.",
-    notAndroid: "Puzlario è un gioco per Android: apri questo link sul tuo telefono.",
+    notAndroid: "Puzlario è un gioco per Android, ma puoi giocare questo duello qui, nel browser.", androidOnly: "Puzlario è un gioco per Android: apri questo link sul tuo telefono.",
     invalid: "Questo link del duello è incompleto.", broken: "Duello di Puzlario",
     tagline: "Giochi di logica ogni giorno, senza vite e senza cronometro", privacy: "Privacy" },
   de: { title: "Duell in Puzlario", challenged: "Du wurdest zum Duell herausgefordert!", reply: "Antwort auf dein Duell",
@@ -118,9 +121,9 @@ const TEXTS = {
     replyBody: "{game}-Duell: du {mine}, dein Gegenüber {theirs}.",
     none: "{time} ohne Tipps", one: "{time} mit 1 Tipp", many: "{time} mit {n} Tipps",
     rule: "Dasselbe Rätsel für euch beide. Die niedrigste Zeit gewinnt; jeder Tipp zählt {s} Sekunden extra.",
-    open: "In Puzlario öffnen", store: "Jetzt bei Google Play",
+    play: "Im Browser spielen", open: "In Puzlario öffnen", store: "Jetzt bei Google Play",
     note: "Du hast Puzlario noch nicht? Installiere es und tippe noch einmal auf den Duell-Link.",
-    notAndroid: "Puzlario ist ein Spiel für Android: Öffne diesen Link auf deinem Handy.",
+    notAndroid: "Puzlario ist ein Spiel für Android, aber dieses Duell kannst du direkt hier im Browser spielen.", androidOnly: "Puzlario ist ein Spiel für Android: Öffne diesen Link auf deinem Handy.",
     invalid: "Dieser Duell-Link ist unvollständig.", broken: "Puzlario-Duell",
     tagline: "Tägliche Logikrätsel, ohne Leben und ohne Uhr", privacy: "Datenschutz" },
 };
@@ -192,10 +195,17 @@ if (!valid) {
       { game: name, mine: result(replySeconds, replyHints), theirs: result(seconds, hints) });
   }
   document.getElementById("rule").textContent = fill(t.rule, { s: HINT_SECONDS });
+  const safe = new URLSearchParams();
+  for (const key of ["v", "j", "o", "n", "t", "p", "f", "rt", "rp"]) if (params.has(key)) safe.set(key, params.get(key));
+  if (replySeconds === undefined) {
+    const play = document.getElementById("play");
+    play.href = "jugar/?" + safe.toString();
+    play.textContent = t.play;
+    play.hidden = false;
+    if (isAndroid) play.className = "button secondary";
+  }
   if (isAndroid) {
     // El mismo enlace, abierto con el juego (Chrome: intent:// con el paquete; si no está, a Google Play).
-    const safe = new URLSearchParams();
-    for (const key of ["v", "j", "o", "n", "t", "p", "f", "rt", "rp"]) if (params.has(key)) safe.set(key, params.get(key));
     const open = document.getElementById("open");
     open.href = "intent://kailscillo.github.io/duelo/?" + safe.toString() + "#Intent;scheme=https;package=" + PACKAGE
       + ";S.browser_fallback_url=" + encodeURIComponent(STORE) + ";end";
@@ -203,7 +213,7 @@ if (!valid) {
     open.hidden = false;
     document.getElementById("note").textContent = t.note;
   } else {
-    document.getElementById("note").textContent = t.notAndroid;
+    document.getElementById("note").textContent = replySeconds === undefined ? t.notAndroid : t.androidOnly;
   }
 }
 </script>
