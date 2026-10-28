@@ -56,7 +56,8 @@
 // Página de los enlaces de duelo de Puzlario (v1.0, mejora 6). El enlace lleva el juego, el puzle y el
 // resultado de quien reta; esta página solo lo enseña y, en Android, abre el juego con el mismo enlace.
 // v1.1: «Jugar en el navegador» lleva a jugar/ (la versión web del juego, solo para duelos) con el mismo
-// enlace; fuera de Android es el botón principal.
+// enlace; fuera de Android es el botón principal. Los puzles de Reinas hechos por un jugador (v=2, o=c)
+// llevan sus regiones en «c» y, si quien comparte aún no lo ha jugado, ningún tiempo.
 // No guarda ni envía nada. Los nombres de los juegos los escribe tools/duel_page.gd desde las traducciones.
 "use strict";
 /* juegos: */
@@ -75,6 +76,8 @@ const TEXTS = {
     note: "¿Aún no tienes Puzlario? Instálalo y vuelve a tocar el enlace del duelo.",
     notAndroid: "Puzlario es un juego para Android, pero este duelo puedes jugarlo aquí mismo, en el navegador.", androidOnly: "Puzlario es un juego para Android: abre este enlace en tu móvil.",
     invalid: "Este enlace de duelo no está completo.", broken: "Duelo de Puzlario",
+    made: "¡Te han hecho un puzle!", madeBody: "Te han hecho un puzle de {game} a medida. ¿Lo resuelves?",
+    madeRule: "Resuélvelo y reta con tu tiempo a quien te lo hizo. Cada pista suma {s} segundos.",
     tagline: "Juegos de lógica diarios, sin vidas y sin reloj", privacy: "Privacidad" },
   en: { title: "Puzlario duel", challenged: "You've been challenged to a duel!", reply: "Reply to your duel",
     body: "Your rival solved this {game} puzzle in {theirs}. Can you do better?",
@@ -85,6 +88,8 @@ const TEXTS = {
     note: "Don't have Puzlario yet? Install it and tap the duel link again.",
     notAndroid: "Puzlario is an Android game, but you can play this duel right here in your browser.", androidOnly: "Puzlario is a game for Android: open this link on your phone.",
     invalid: "This duel link is incomplete.", broken: "Puzlario duel",
+    made: "Someone made you a puzzle!", madeBody: "Someone made a custom {game} puzzle for you. Can you solve it?",
+    madeRule: "Solve it and challenge whoever made it with your time. Each hint adds {s} seconds.",
     tagline: "Daily logic puzzles, with no lives and no timer", privacy: "Privacy" },
   pt_BR: { title: "Duelo no Puzlario", challenged: "Desafiaram você para um duelo!", reply: "Resposta ao seu duelo",
     body: "Seu rival resolveu este quebra-cabeça de {game} em {theirs}. Consegue fazer melhor?",
@@ -95,6 +100,8 @@ const TEXTS = {
     note: "Ainda não tem o Puzlario? Instale e toque de novo no link do duelo.",
     notAndroid: "O Puzlario é um jogo para Android, mas você pode jogar este duelo aqui mesmo, no navegador.", androidOnly: "O Puzlario é um jogo para Android: abra este link no seu celular.",
     invalid: "Este link de duelo está incompleto.", broken: "Duelo do Puzlario",
+    made: "Fizeram um quebra-cabeça para você!", madeBody: "Fizeram um quebra-cabeça de {game} sob medida para você. Consegue resolver?",
+    madeRule: "Resolva e desafie quem fez com o seu tempo. Cada dica soma {s} segundos.",
     tagline: "Jogos de lógica diários, sem vidas e sem relógio", privacy: "Privacidade" },
   fr: { title: "Duel sur Puzlario", challenged: "On te défie en duel !", reply: "Réponse à ton duel",
     body: "Ton adversaire a résolu ce puzzle de {game} en {theirs}. Tu peux faire mieux ?",
@@ -105,6 +112,8 @@ const TEXTS = {
     note: "Tu n’as pas encore Puzlario ? Installe-le et touche à nouveau le lien du duel.",
     notAndroid: "Puzlario est un jeu pour Android, mais tu peux jouer ce duel ici même, dans ton navigateur.", androidOnly: "Puzlario est un jeu pour Android : ouvre ce lien sur ton téléphone.",
     invalid: "Ce lien de duel est incomplet.", broken: "Duel Puzlario",
+    made: "On t’a fait un puzzle !", madeBody: "On t’a créé un puzzle de {game} sur mesure. Tu le résous ?",
+    madeRule: "Résous-le et défie son auteur avec ton temps. Chaque indice ajoute {s} secondes.",
     tagline: "Jeux de logique quotidiens, sans vies et sans chrono", privacy: "Confidentialité" },
   it: { title: "Duello su Puzlario", challenged: "Hai ricevuto una sfida a duello!", reply: "Risposta al tuo duello",
     body: "Il tuo rivale ha risolto questo puzzle di {game} in {theirs}. Riesci a fare meglio?",
@@ -115,6 +124,8 @@ const TEXTS = {
     note: "Non hai ancora Puzlario? Installalo e tocca di nuovo il link del duello.",
     notAndroid: "Puzlario è un gioco per Android, ma puoi giocare questo duello qui, nel browser.", androidOnly: "Puzlario è un gioco per Android: apri questo link sul tuo telefono.",
     invalid: "Questo link del duello è incompleto.", broken: "Duello di Puzlario",
+    made: "Ti hanno fatto un puzzle!", madeBody: "Ti hanno creato un puzzle di {game} su misura. Riesci a risolverlo?",
+    madeRule: "Risolvilo e sfida chi l’ha creato con il tuo tempo. Ogni suggerimento aggiunge {s} secondi.",
     tagline: "Giochi di logica ogni giorno, senza vite e senza cronometro", privacy: "Privacy" },
   de: { title: "Duell in Puzlario", challenged: "Du wurdest zum Duell herausgefordert!", reply: "Antwort auf dein Duell",
     body: "Dein Gegenüber hat dieses {game}-Rätsel in {theirs} gelöst. Schaffst du es besser?",
@@ -125,6 +136,8 @@ const TEXTS = {
     note: "Du hast Puzlario noch nicht? Installiere es und tippe noch einmal auf den Duell-Link.",
     notAndroid: "Puzlario ist ein Spiel für Android, aber dieses Duell kannst du direkt hier im Browser spielen.", androidOnly: "Puzlario ist ein Spiel für Android: Öffne diesen Link auf deinem Handy.",
     invalid: "Dieser Duell-Link ist unvollständig.", broken: "Puzlario-Duell",
+    made: "Ein Rätsel nur für dich!", madeBody: "Jemand hat ein {game}-Rätsel für dich gebaut. Kannst du es lösen?",
+    madeRule: "Löse es und schick deine Zeit zurück. Jeder Tipp zählt {s} Sekunden extra.",
     tagline: "Tägliche Logikrätsel, ohne Leben und ohne Uhr", privacy: "Datenschutz" },
 };
 
@@ -159,12 +172,22 @@ const t = TEXTS[lang];
 document.documentElement.lang = lang.replace("_", "-");
 const params = new URLSearchParams(location.search);
 const game = params.get("j");
-const seconds = number(params.get("t"), 359999);
-const hints = number(params.get("p"), 999);
+const custom = params.get("o") === "c";
+// Un puzle a medida recién hecho llega sin «t» ni «p» (quien lo comparte aún no lo ha jugado).
+const untimed = custom && !params.has("t") && !params.has("p");
+const seconds = untimed ? -1 : number(params.get("t"), 359999);
+const hints = untimed ? 0 : number(params.get("p"), 999);
 const replySeconds = params.has("rt") ? number(params.get("rt"), 359999) : undefined;
 const replyHints = params.has("rp") ? number(params.get("rp"), 999) : undefined;
-const valid = params.get("v") === "1" && Object.prototype.hasOwnProperty.call(GAMES.es, game || "")
-  && ["d", "easy", "medium", "hard"].includes(params.get("o")) && number(params.get("n"), 999999) !== null
+// Las regiones de un puzle a medida: una cifra por casilla, un cuadrado de 5 a 10 de lado.
+function validCode(code) {
+  if (typeof code !== "string" || !/^\d+$/.test(code)) return false;
+  const side = Math.round(Math.sqrt(code.length));
+  return side >= 5 && side <= 10 && side * side === code.length && [...code].every((c) => Number(c) < side);
+}
+const valid = (custom ? params.get("v") === "2" && game === "crowns" && validCode(params.get("c"))
+    : ["1", "2"].includes(params.get("v")) && Object.prototype.hasOwnProperty.call(GAMES.es, game || "")
+      && ["d", "easy", "medium", "hard"].includes(params.get("o")) && number(params.get("n"), 999999) !== null)
   && seconds !== null && hints !== null && /^[0-9a-fA-F]{6}$/.test(params.get("f") || "")
   && replySeconds !== null && replyHints !== null && (replySeconds === undefined) === (replyHints === undefined);
 
@@ -186,7 +209,10 @@ if (!valid) {
 } else {
   const name = GAMES[lang][game] || GAMES.en[game];
   document.getElementById("kicker").textContent = "Puzlario · " + name;
-  if (replySeconds === undefined) {
+  if (untimed) {
+    document.getElementById("title").textContent = t.made;
+    document.getElementById("body").textContent = fill(t.madeBody, { game: name });
+  } else if (replySeconds === undefined) {
     document.getElementById("title").textContent = t.challenged;
     document.getElementById("body").textContent = fill(t.body, { game: name, theirs: result(seconds, hints) });
   } else {
@@ -194,9 +220,9 @@ if (!valid) {
     document.getElementById("body").textContent = fill(t.replyBody,
       { game: name, mine: result(replySeconds, replyHints), theirs: result(seconds, hints) });
   }
-  document.getElementById("rule").textContent = fill(t.rule, { s: HINT_SECONDS });
+  document.getElementById("rule").textContent = fill(untimed ? t.madeRule : t.rule, { s: HINT_SECONDS });
   const safe = new URLSearchParams();
-  for (const key of ["v", "j", "o", "n", "t", "p", "f", "rt", "rp"]) if (params.has(key)) safe.set(key, params.get(key));
+  for (const key of ["v", "j", "o", "n", "c", "t", "p", "f", "rt", "rp"]) if (params.has(key)) safe.set(key, params.get(key));
   if (replySeconds === undefined) {
     const play = document.getElementById("play");
     play.href = "jugar/?" + safe.toString();
